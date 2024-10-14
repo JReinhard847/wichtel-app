@@ -1,0 +1,6 @@
+.idea
+./backend/.mvn
+./backend/mvnw
+./backend/mvn.cmd
+
+*.iml
