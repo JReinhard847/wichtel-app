@@ -3,6 +3,7 @@ package org.example.backend.util;
 import org.example.backend.model.*;
 
 import java.util.List;
+import java.util.Map;
 
 public class DTOConverter {
 
@@ -27,5 +28,9 @@ public class DTOConverter {
                 .map(DTOConverter::toDTO)
                 .toList();
         return new WichtelEventDTO(toDTO(event.getOrganizer()), event.getTitle(), event.getDescription(), event.getBudget(), event.getImage(), event.getDrawDate(), event.getGiftExchangeDate(), participantDTOList);
+    }
+
+    public static WichtelEvent fromDTO(WichtelEventDTO dto, String id, WichtelUser organizer, List<WichtelParticipant> participants, Map<WichtelParticipant,WichtelParticipant> pairing){
+        return new WichtelEvent(id,organizer,dto.getTitle(),dto.getDescription(),dto.getBudget(),dto.getImage(),dto.getDrawDate(),dto.getGiftExchangeDate(),participants,pairing);
     }
 }
