@@ -1,6 +1,13 @@
 .idea
+
+
 ./backend/.mvn
 ./backend/mvnw
 ./backend/mvn.cmd
+./backend/target
+
+
+./frontend/dist
+./frontend/node_modules
 
 *.iml
