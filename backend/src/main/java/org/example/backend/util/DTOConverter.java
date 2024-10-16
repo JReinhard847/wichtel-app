@@ -8,19 +8,19 @@ import java.util.Map;
 public class DTOConverter {
 
     public static WichtelUserDTO toDTO(WichtelUser user) {
-        return new WichtelUserDTO(user.getName());
+        return new WichtelUserDTO(user.getName(), user.getEmail());
     }
 
-    public static WichtelUser fromDTO(WichtelUserDTO dto, String id, String email) {
-        return new WichtelUser(id, dto.getName(), email);
+    public static WichtelUser fromDTO(WichtelUserDTO dto, String id) {
+        return new WichtelUser(id, dto.getName(), dto.getEmail());
     }
 
     public static WichtelParticipantDTO toDTO(WichtelParticipant participant) {
         return new WichtelParticipantDTO(toDTO(participant.getParticipant()), participant.getInvitationStatus());
     }
 
-    public static WichtelParticipant fromDTO(WichtelParticipantDTO dto, String id, String email, String address, String wishList) {
-        return new WichtelParticipant(fromDTO(dto.getParticipant(), id, email), dto.getInvitationStatus(), wishList, address);
+    public static WichtelParticipant fromDTO(WichtelParticipantDTO dto, String id, String address, String wishList) {
+        return new WichtelParticipant(fromDTO(dto.getParticipant(), id), dto.getInvitationStatus(), wishList, address);
     }
 
     public static WichtelEventDTO toDTO(WichtelEvent event) {

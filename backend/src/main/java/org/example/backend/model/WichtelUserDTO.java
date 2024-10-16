@@ -7,4 +7,5 @@ import lombok.Data;
 @AllArgsConstructor
 public class WichtelUserDTO {
     String name;
+    String email;
 }

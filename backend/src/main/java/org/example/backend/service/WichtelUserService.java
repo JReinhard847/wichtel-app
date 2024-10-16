@@ -22,22 +22,17 @@ public class WichtelUserService {
         return repo.findById(id).orElseThrow(NoSuchElementException::new);
     }
 
-    public WichtelUser save(WichtelUserDTO dto, String email) {
-        return repo.save(fromDTO(dto,idService.generateId(),email));
-    }
-
-    public WichtelUser updateName(String name, String id){
-        WichtelUser user = findById(id);
-        return repo.save(user.withName(name));
-    }
-
-    public WichtelUser updateEmail(String email,String id){
-        WichtelUser user = findById(id);
-        return repo.save(user.withEmail(email));
+    public WichtelUser save(WichtelUserDTO dto) {
+        return repo.save(fromDTO(dto, idService.generateId()));
     }
 
     public void deleteById(String id){
         repo.deleteById(id);
+    }
+
+    public WichtelUser update(WichtelUserDTO dto,String id){
+        repo.findById(id).orElseThrow(NoSuchElementException::new);
+        return repo.save(fromDTO(dto,id));
     }
 
     public List<WichtelUser> findAll(){
