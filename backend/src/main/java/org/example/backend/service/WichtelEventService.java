@@ -63,7 +63,7 @@ public class WichtelEventService {
                 .findFirst()
                 .orElseThrow(IllegalArgumentException::new);
         event.getParticipants().remove(oldParticipant);
-        event.getParticipants().add(new WichtelParticipant(user,participant.getInvitationStatus(),participant.getWishList(),participant.getAddress()));
+        event.getParticipants().add(new WichtelParticipant(user, participant.getInvitationStatus(), participant.getWishList(), participant.getAddress()));
         return toDTO(repo.save(event));
     }
 }

@@ -20,7 +20,7 @@ public class DTOConverter {
     }
 
     public static WichtelParticipant fromDTO(WichtelParticipantDTO dto, String id, String address, String wishList) {
-        return new WichtelParticipant(fromDTO(dto.getParticipant(), id), dto.getInvitationStatus(), wishList, address);
+        return new WichtelParticipant(fromDTO(dto.getParticipant(), id), dto.getInvitationStatus(), address, wishList);
     }
 
     public static WichtelEventDTO toDTO(WichtelEvent event) {
