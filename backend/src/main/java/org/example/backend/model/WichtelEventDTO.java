@@ -26,4 +26,5 @@ public class WichtelEventDTO {
     @With
     LocalDateTime giftExchangeDate;
     List<WichtelParticipantDTO> participants;
+
 }

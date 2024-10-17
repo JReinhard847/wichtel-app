@@ -15,4 +15,5 @@ public class WichtelParticipant {
     String wishList;
     @With
     String address;
+
 }

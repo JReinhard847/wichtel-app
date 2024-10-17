@@ -9,4 +9,5 @@ import lombok.Data;
 public class WichtelParticipantDTO {
     WichtelUserDTO participant;
     InvitationStatus invitationStatus;
+
 }

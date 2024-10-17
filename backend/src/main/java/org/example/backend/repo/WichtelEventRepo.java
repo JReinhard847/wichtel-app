@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface WichtelEventRepo extends MongoRepository<WichtelEvent,String> {
+
 }
