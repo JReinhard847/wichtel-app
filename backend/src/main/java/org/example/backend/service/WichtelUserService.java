@@ -31,7 +31,9 @@ public class WichtelUserService {
     }
 
     public WichtelUser update(WichtelUserDTO dto,String id){
-        repo.findById(id).orElseThrow(NoSuchElementException::new);
+        if(repo.findById(id).isEmpty()){
+            throw new NoSuchElementException();
+        }
         return repo.save(fromDTO(dto,id));
     }
 

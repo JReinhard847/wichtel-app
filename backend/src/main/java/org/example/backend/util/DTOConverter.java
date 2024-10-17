@@ -2,10 +2,12 @@ package org.example.backend.util;
 
 import org.example.backend.model.*;
 
-import java.util.List;
-import java.util.Map;
 
 public class DTOConverter {
+
+    private DTOConverter(){
+        throw new UnsupportedOperationException();
+    }
 
     public static WichtelUserDTO toDTO(WichtelUser user) {
         return new WichtelUserDTO(user.getName(), user.getEmail());
