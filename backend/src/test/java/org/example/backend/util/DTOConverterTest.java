@@ -44,5 +44,6 @@ class DTOConverterTest {
                 new HashMap<>());
         WichtelEventDTO dto = toDTO(expected);
         WichtelEvent actual = fromDTO(dto,"id",user,List.of(new WichtelParticipant(user,InvitationStatus.PENDING,"wishList","address")),new HashMap<>());
+        assertEquals(expected,actual);
     }
 }

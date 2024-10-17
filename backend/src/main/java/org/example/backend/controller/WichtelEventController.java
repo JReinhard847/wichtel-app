@@ -60,7 +60,7 @@ public class WichtelEventController {
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public String handleIllegalArgumentException(IllegalArgumentException exception) {
         return exception.getMessage();
     }
