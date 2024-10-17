@@ -2,6 +2,9 @@ package org.example.backend.util;
 
 import org.example.backend.model.*;
 
+import java.util.List;
+import java.util.Map;
+
 
 public class DTOConverter {
 
