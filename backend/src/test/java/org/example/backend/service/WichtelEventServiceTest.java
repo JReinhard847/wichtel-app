@@ -49,7 +49,7 @@ class WichtelEventServiceTest {
     @Test
     void update() {
         WichtelEvent previous = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
-        WichtelUser organizer = new WichtelUser("1","name","email");
+        WichtelUser organizer = new WichtelUser("1", "name", "email");
         WichtelEventDTO updated = new WichtelEventDTO(toDTO(organizer),
                 "title",
                 "description",
@@ -60,49 +60,76 @@ class WichtelEventServiceTest {
                 Collections.emptyList());
         when(repo.findById("id")).thenReturn(Optional.of(previous));
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
-        WichtelEventDTO actual = service.update(updated,"id");
+        WichtelEventDTO actual = service.update(updated, "id");
         verify(repo).save(any(WichtelEvent.class));
-        assertEquals(updated,actual);
+        assertEquals(updated, actual);
     }
 
     @Test
     void addParticipant_throws_ifAlreadyInEvent() {
-        WichtelUser user = new WichtelUser("1","name","email");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, List.of(new WichtelParticipant(user,null,null,null)), new HashMap<>());
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, List.of(new WichtelParticipant(user, null, null, null)), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
-        assertThrows(IllegalArgumentException.class,() -> service.addParticipant("id","1"));
+        assertThrows(IllegalArgumentException.class, () -> service.addParticipant("id", "1"));
     }
 
     @Test
     void addParticipant_addsUserToEvent_ifNotAlreadyPresent() {
-        WichtelUser user = new WichtelUser("1","name","email");
-        WichtelUser secondUser = new WichtelUser("2","name2","email2");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user,null,null,null))), new HashMap<>());
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser secondUser = new WichtelUser("2", "name2", "email2");
+        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user, null, null, null))), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
         when(userService.findById("2")).thenReturn(secondUser);
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
-        WichtelEventDTO actual = service.addParticipant("id","2");
+        WichtelEventDTO actual = service.addParticipant("id", "2");
         verify(repo).save(any(WichtelEvent.class));
-        assertEquals(2,actual.getParticipants().size());
+        assertEquals(2, actual.getParticipants().size());
     }
 
     @Test
     void updateParticipant_throws_ifUserIsNotInEvent() {
-        WichtelUser user = new WichtelUser("1","name","email");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, List.of(new WichtelParticipant(user,null,null,null)), new HashMap<>());
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, List.of(new WichtelParticipant(user, null, null, null)), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
-        assertThrows(IllegalArgumentException.class,() -> service.updateParticipant("id",new WichtelParticipant(null,null,null,null),"2"));
+        assertThrows(IllegalArgumentException.class, () -> service.updateParticipant("id", new WichtelParticipant(null, null, null, null), "2"));
     }
 
     @Test
-    void updateParticipant_updates_ifUserIsInEvent(){
-        WichtelUser user = new WichtelUser("1","name","email");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user,InvitationStatus.PENDING,"",""))), new HashMap<>());
+    void updateParticipant_updates_ifUserIsInEvent() {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
         when(userService.findById("1")).thenReturn(user);
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
-        WichtelParticipant updated = new WichtelParticipant(user,InvitationStatus.ACCEPTED,"","");
-        WichtelEventDTO actual = service.updateParticipant("id",updated,"1");
-        assertEquals(toDTO(updated),actual.getParticipants().getFirst());
+        WichtelParticipant updated = new WichtelParticipant(user, InvitationStatus.ACCEPTED, "", "");
+        WichtelEventDTO actual = service.updateParticipant("id", updated, "1");
+        assertEquals(toDTO(updated), actual.getParticipants().getFirst());
+    }
+
+    @Test
+    void deleteParticipant_throws_ifUserDoesntExist() {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .participants(new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))))
+                .build();
+        when(userService.findById("1")).thenThrow(new NoSuchElementException());
+        when(repo.findById("id")).thenReturn(Optional.of(event));
+        assertThrows(NoSuchElementException.class, () -> service.deleteParticipant("id", "1"));
+    }
+
+    @Test
+    void deleteParticipant_deletes_ifRequestValid() {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .participants(new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))))
+                .organizer(user)
+                .build();
+        when(userService.findById("1")).thenReturn(user);
+        when(repo.findById("id")).thenReturn(Optional.of(event));
+        when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
+        WichtelEventDTO result = service.deleteParticipant("id","1");
+        assertEquals(0,result.getParticipants().size());
     }
 }

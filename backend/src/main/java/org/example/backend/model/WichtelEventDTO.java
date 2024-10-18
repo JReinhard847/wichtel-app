@@ -1,6 +1,7 @@
 package org.example.backend.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class WichtelEventDTO {
     WichtelUserDTO organizer;
     @With

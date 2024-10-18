@@ -1,6 +1,7 @@
 package org.example.backend.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 
@@ -10,6 +11,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class WichtelEvent {
     String id;
     WichtelUser organizer;
