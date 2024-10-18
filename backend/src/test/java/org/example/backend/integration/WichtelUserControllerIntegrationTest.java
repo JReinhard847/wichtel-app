@@ -57,7 +57,7 @@ class WichtelUserControllerIntegrationTest {
     @DirtiesContext
     @Test
     void findById_shouldThrow_onEmptyDB() throws Exception{
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/1"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/user/1"))
                 .andExpect(status().isNotFound());
     }
     @DirtiesContext

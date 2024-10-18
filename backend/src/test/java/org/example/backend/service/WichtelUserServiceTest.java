@@ -47,8 +47,6 @@ class WichtelUserServiceTest {
         WichtelUser actual = service.save(dto);
         verify(repo).save(any(WichtelUser.class));
         assertEquals(expected,actual);
-
-
     }
 
     @Test
