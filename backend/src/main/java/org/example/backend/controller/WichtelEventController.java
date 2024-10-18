@@ -53,6 +53,11 @@ public class WichtelEventController {
         return service.updateParticipant(eventId,participant,participantId);
     }
 
+    @DeleteMapping("/{eventId}/{participantId}")
+    WichtelEventDTO deleteParticipant(@PathVariable String eventId,@PathVariable String participantId){
+        return service.deleteParticipant(eventId,participantId);
+    }
+
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleNotFoundException(NoSuchElementException exception) {
@@ -64,7 +69,4 @@ public class WichtelEventController {
     public String handleIllegalArgumentException(IllegalArgumentException exception) {
         return exception.getMessage();
     }
-
-
-
 }

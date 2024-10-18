@@ -74,56 +74,56 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void createEvent_throws_ifCreatingUserDoesNotExist() throws Exception{
+    void createEvent_throws_ifCreatingUserDoesNotExist() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/1"))
                 .andExpect(status().isNotFound());
     }
 
     @DirtiesContext
     @Test
-    void createEvent_createsAnEvent_ifCreatingUserExists() throws Exception{
-        userRepo.save(new WichtelUser("1","name","email"));
+    void createEvent_createsAnEvent_ifCreatingUserExists() throws Exception {
+        userRepo.save(new WichtelUser("1", "name", "email"));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/1"))
                 .andExpect(status().isOk());
-        assertEquals(1,repo.count());
+        assertEquals(1, repo.count());
     }
 
     @DirtiesContext
     @Test
-    void findById_shouldThrow_onEmptyDB() throws Exception{
+    void findById_shouldThrow_onEmptyDB() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/event/1"))
                 .andExpect(status().isNotFound());
     }
 
     @DirtiesContext
     @Test
-    void findById_shouldReturnUser_ifInDB() throws Exception{
+    void findById_shouldReturnUser_ifInDB() throws Exception {
         WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
-                                {
-                                "organizer": {
-                                                "name": "name",
-                                                "email": "email"
-                                              },
-                                "title": "test title",
-                                "description":"",
-                                "budget":"",
-                                "image":"",
-                                "drawDate":null,
-                                "giftExchangeDate":null,
-                                "participants":[]
-                                }
-                            """));
+                            {
+                            "organizer": {
+                                            "name": "name",
+                                            "email": "email"
+                                          },
+                            "title": "test title",
+                            "description":"",
+                            "budget":"",
+                            "image":"",
+                            "drawDate":null,
+                            "giftExchangeDate":null,
+                            "participants":[]
+                            }
+                        """));
     }
 
     @DirtiesContext
     @Test
-    void delete_shouldDeleteEvent() throws Exception{
+    void delete_shouldDeleteEvent() throws Exception {
         WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         repo.save(event);
 
@@ -135,7 +135,7 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void update_shouldThrow_ifEventDoesntExist() throws Exception{
+    void update_shouldThrow_ifEventDoesntExist() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -157,13 +157,13 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void update_shouldUpdate_ifEventInDB() throws Exception{
+    void update_shouldUpdate_ifEventInDB() throws Exception {
         WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
                                 {
                                 "organizer": {
                                                 "name": "name",
@@ -179,26 +179,26 @@ public class WichtelEventControllerIntegrationTest {
                                 }"""))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
-                                {
-                                "organizer": {
-                                                "name": "name",
-                                                "email": "email"
-                                              },
-                                "title": "test title",
-                                "description":"",
-                                "budget":"",
-                                "image":"",
-                                "drawDate":null,
-                                "giftExchangeDate":null,
-                                "participants":[]
-                                }"""));
+                        {
+                        "organizer": {
+                                        "name": "name",
+                                        "email": "email"
+                                      },
+                        "title": "test title",
+                        "description":"",
+                        "budget":"",
+                        "image":"",
+                        "drawDate":null,
+                        "giftExchangeDate":null,
+                        "participants":[]
+                        }"""));
 
-        assertEquals("test title",repo.findById("id").orElseThrow().getTitle());
+        assertEquals("test title", repo.findById("id").orElseThrow().getTitle());
     }
 
     @DirtiesContext
     @Test
-    void addParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception{
+    void addParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
         WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
         repo.save(event);
 
@@ -208,7 +208,7 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void addParticipant_shouldThrow_ifEventDoesntExistInDB() throws Exception{
+    void addParticipant_shouldThrow_ifEventDoesntExistInDB() throws Exception {
         userRepo.save(new WichtelUser("1", "name", "email"));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
@@ -217,7 +217,7 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void addParticipant_shouldThrow_ifAlreadyParticipating() throws Exception{
+    void addParticipant_shouldThrow_ifAlreadyParticipating() throws Exception {
         WichtelUser user = new WichtelUser("1", "name", "email");
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
@@ -229,7 +229,7 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void addParticipant_shouldAdd_ifRequestValid() throws Exception{
+    void addParticipant_shouldAdd_ifRequestValid() throws Exception {
         WichtelUser user = new WichtelUser("1", "name", "email");
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
@@ -237,15 +237,15 @@ public class WichtelEventControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
-                            {
-                            "participants": [{"participant":{"name":"name","email":"email"},"invitationStatus":"PENDING"}]
-                            }
-                            """));
+                        {
+                        "participants": [{"participant":{"name":"name","email":"email"},"invitationStatus":"PENDING"}]
+                        }
+                        """));
     }
 
     @DirtiesContext
     @Test
-    void updateParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception{
+    void updateParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
         WichtelUser user = new WichtelUser("1", "name", "email");
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         repo.save(event);
@@ -264,7 +264,7 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void updateParticipant_shouldThrow_ifEventDoesntExist() throws Exception{
+    void updateParticipant_shouldThrow_ifEventDoesntExist() throws Exception {
         WichtelUser user = new WichtelUser("1", "name", "email");
         userRepo.save(user);
 
@@ -282,7 +282,7 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void updateParticipant_shouldThrow_ifUserIsNotParticipating() throws Exception{
+    void updateParticipant_shouldThrow_ifUserIsNotParticipating() throws Exception {
         WichtelUser user = new WichtelUser("1", "name", "email");
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
@@ -302,10 +302,10 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void updateParticipant_shouldUpdate_ifRequestValid() throws Exception{
+    void updateParticipant_shouldUpdate_ifRequestValid() throws Exception {
         WichtelUser user = new WichtelUser("1", "name", "email");
         userRepo.save(user);
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user,InvitationStatus.PENDING,"",""))), new HashMap<>());
+        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id/1")
@@ -319,10 +319,51 @@ public class WichtelEventControllerIntegrationTest {
                                 }"""))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
-                                {
-                                      "participants": [{
-                                                        "participant": { "name": "name","email":"email"},
-                                                        "invitationStatus": "ACCEPTED"}
-                                                        ]}"""));
+                        {
+                              "participants": [{
+                                                "participant": { "name": "name","email":"email"},
+                                                "invitationStatus": "ACCEPTED"}
+                                                ]}"""));
     }
+
+    @DirtiesContext
+    @Test
+    void deleteParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @DirtiesContext
+    @Test
+    void deleteParticipant_shouldThrow_ifEventDoesntExist() throws Exception {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        userRepo.save(user);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
+                .andExpect(status().isNotFound());
+    }
+
+    @DirtiesContext
+    @Test
+    void deleteParticipant_shouldDelete_ifRequestValid() throws Exception {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        userRepo.save(user);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                              "participants": [ ]}"""));
+    }
+
 }

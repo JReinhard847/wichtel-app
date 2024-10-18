@@ -66,4 +66,11 @@ public class WichtelEventService {
         event.getParticipants().add(new WichtelParticipant(user, participant.getInvitationStatus(), participant.getWishList(), participant.getAddress()));
         return toDTO(repo.save(event));
     }
+
+    public WichtelEventDTO deleteParticipant(String eventId, String participantId) {
+        WichtelEvent event = repo.findById(eventId).orElseThrow(NoSuchElementException::new);
+        WichtelUser user = userService.findById(participantId);
+        event.getParticipants().removeIf(participant -> Objects.equals(participant.getParticipant(), user));
+        return toDTO(repo.save(event));
+    }
 }
