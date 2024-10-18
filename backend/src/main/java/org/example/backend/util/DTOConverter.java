@@ -35,7 +35,7 @@ public class DTOConverter {
         return new WichtelEventDTO(toDTO(event.getOrganizer()), event.getTitle(), event.getDescription(), event.getBudget(), event.getImage(), event.getDrawDate(), event.getGiftExchangeDate(), participantDTOList);
     }
 
-    public static WichtelEvent fromDTO(WichtelEventDTO dto, String id, WichtelUser organizer, List<WichtelParticipant> participants, Map<WichtelParticipant,WichtelParticipant> pairing){
+    public static WichtelEvent fromDTO(WichtelEventDTO dto, String id, WichtelUser organizer, List<WichtelParticipant> participants, Map<String,WichtelParticipant> pairing){
         return new WichtelEvent(id,organizer,dto.getTitle(),dto.getDescription(),dto.getBudget(),dto.getImage(),dto.getDrawDate(),dto.getGiftExchangeDate(),participants,pairing);
     }
 }

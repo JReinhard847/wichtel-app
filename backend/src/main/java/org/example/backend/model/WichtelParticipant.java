@@ -7,13 +7,11 @@ import lombok.With;
 
 @Data
 @AllArgsConstructor
+@With
 public class WichtelParticipant {
     WichtelUser participant;
-    @With
     InvitationStatus invitationStatus;
-    @With
     String wishList;
-    @With
     String address;
 
 }

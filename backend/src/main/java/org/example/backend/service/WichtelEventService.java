@@ -7,6 +7,8 @@ import org.example.backend.util.DTOConverter;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.DTOConverter.toDTO;
@@ -18,6 +20,7 @@ public class WichtelEventService {
     private final WichtelEventRepo repo;
     private final IdService idService;
     private final WichtelUserService userService;
+    private final WichtelPairingService pairingService;
 
     public String createEmptyEvent(String organizerId) {
         WichtelUser organizer = userService.findById(organizerId);
@@ -72,5 +75,24 @@ public class WichtelEventService {
         WichtelUser user = userService.findById(participantId);
         event.getParticipants().removeIf(participant -> Objects.equals(participant.getParticipant(), user));
         return toDTO(repo.save(event));
+    }
+
+    public WichtelEventDTO generatePairings(String eventId) {
+        WichtelEvent event = repo.findById(eventId).orElseThrow(NoSuchElementException::new);
+        if(event.getParticipants().size()<2){
+            throw new IllegalStateException();
+        }
+        Map<String, WichtelParticipant> pairings = pairingService.generateSimplePairings(event);
+        event.getPairings().putAll(pairings);
+        return toDTO(repo.save(event));
+    }
+
+    public WichtelParticipant getPairingOfUser(String eventId, String participantId) {
+        WichtelEvent event = repo.findById(eventId).orElseThrow(NoSuchElementException::new);
+        WichtelUser user = userService.findById(participantId);
+        if(event.getPairings().isEmpty()){
+            throw new IllegalStateException();
+        }
+        return event.getPairings().get(user.getId());
     }
 }
