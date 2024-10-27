@@ -20,8 +20,8 @@ public class WichtelUserController {
     private final WichtelUserService service;
     private final AuthService authService;
 
-    @GetMapping()
-    WichtelUser findById(OAuth2AuthenticationToken authentication){
+    @GetMapping("/me")
+    WichtelUser findMe(OAuth2AuthenticationToken authentication){
         return authService.getUserFromAuthToken(authentication);
     }
 
