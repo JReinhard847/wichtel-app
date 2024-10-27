@@ -39,9 +39,9 @@ class WichtelPairingServiceTest {
     @Test
     void generateSimplePairings() {
         WichtelParticipant p1 = WichtelParticipant.builder()
-                .participant(new WichtelUser("1","","")).build();
+                .participant(WichtelUser.builder().id("1").name("name").email("email").build()).build();
         WichtelParticipant p2 = WichtelParticipant.builder()
-                .participant(new WichtelUser("2","","")).build();
+                .participant(WichtelUser.builder().id("2").name("name").email("email").build()).build();
         WichtelEvent event = WichtelEvent.builder()
                 .participants(
                         List.of(p1,p2)

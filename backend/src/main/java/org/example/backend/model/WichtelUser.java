@@ -9,11 +9,11 @@ import lombok.With;
 @Data
 @AllArgsConstructor
 @Builder
+@With
 public class WichtelUser {
-    @With
     String id;
-    @With
     String name;
-    @With
     String email;
+    String oauthProvider;
+    String oauthId;
 }

@@ -22,7 +22,7 @@ class WichtelUserServiceTest {
 
     @Test
     void findById_findsUser_ifInDB() {
-        WichtelUser expected = new WichtelUser("1","name","email");
+        WichtelUser expected = WichtelUser.builder().id("1").name("name").email("email").build();
         when(repo.findById("1")).thenReturn(Optional.of(expected));
         WichtelUser actual = service.findById("1");
         verify(repo).findById("1");
@@ -39,7 +39,7 @@ class WichtelUserServiceTest {
     @Test
     void save() {
         WichtelUserDTO dto = new WichtelUserDTO("name","email");
-        WichtelUser expected = new WichtelUser("1","name","email");
+        WichtelUser expected = WichtelUser.builder().id("1").name("name").email("email").build();
 
         when(idService.generateId()).thenReturn("1");
         when(repo.save(expected)).thenReturn(expected);
@@ -51,9 +51,9 @@ class WichtelUserServiceTest {
 
     @Test
     void update() {
-        WichtelUser previous = new WichtelUser("1","name","email");
+        WichtelUser previous = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelUserDTO updatedDTO = new WichtelUserDTO("name2","email");
-        WichtelUser expected = new WichtelUser("1","name2","email");
+        WichtelUser expected = WichtelUser.builder().id("1").name("name").email("email").build();
         when(repo.findById("1")).thenReturn(Optional.of(previous));
         when(repo.save(fromDTO(updatedDTO,"1"))).thenReturn(expected);
 
@@ -67,7 +67,7 @@ class WichtelUserServiceTest {
 
     @Test
     void findAll_findsUsersInDB() {
-        List<WichtelUser> expected = List.of(new WichtelUser("1","name","email"));
+        List<WichtelUser> expected = List.of(WichtelUser.builder().id("1").name("name").email("email").build());
         when(repo.findAll()).thenReturn(expected);
         List<WichtelUser> actual = service.findAll();
         verify(repo).findAll();

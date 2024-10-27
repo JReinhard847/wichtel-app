@@ -39,7 +39,7 @@ class WichtelUserControllerIntegrationTest {
     @DirtiesContext
     @Test
     void findAll_getsUsers_ifUsersInDB() throws Exception{
-        repo.save(new WichtelUser("1","name","email"));
+        repo.save(WichtelUser.builder().id("1").name("name").email("email").build());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/user"))
                 .andExpect(status().isOk())
@@ -63,7 +63,7 @@ class WichtelUserControllerIntegrationTest {
     @DirtiesContext
     @Test
     void findById_shouldReturnUser_ifInDB() throws Exception{
-        repo.save(new WichtelUser("1","name","email"));
+        repo.save(WichtelUser.builder().id("1").name("name").email("email").build());
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/user/1"))
                 .andExpect(status().isOk())
@@ -79,7 +79,7 @@ class WichtelUserControllerIntegrationTest {
     @DirtiesContext
     @Test
     void delete_shouldDeleteUser() throws Exception{
-        repo.save(new WichtelUser("1","name","email"));
+        repo.save(WichtelUser.builder().id("1").name("name").email("email").build());
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/user/1"))
                 .andExpect(status().isOk());
@@ -111,7 +111,7 @@ class WichtelUserControllerIntegrationTest {
     @DirtiesContext
     @Test
     void update_shouldUpdate_ifUserInDB() throws Exception {
-        repo.save(new WichtelUser("1","name","email"));
+        repo.save(WichtelUser.builder().id("1").name("name").email("email").build());
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/user/1")
                 .contentType(MediaType.APPLICATION_JSON)
