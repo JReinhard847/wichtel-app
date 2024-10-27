@@ -366,4 +366,88 @@ public class WichtelEventControllerIntegrationTest {
                               "participants": [ ]}"""));
     }
 
+    @DirtiesContext
+    @Test
+    void generatePairings_throws_ifNotEnoughParticipants() throws Exception {
+        WichtelUser user = new WichtelUser("1", "name", "email");
+        userRepo.save(user);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(List.of())
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id"))
+                .andExpect(status().isPreconditionRequired());
+
+    }
+
+    @DirtiesContext
+    @Test
+    void generatePairings_generates_ifRequestValid() throws Exception {
+        WichtelUser user1 = new WichtelUser("1", "name", "email");
+        WichtelUser user2 = new WichtelUser("2", "name", "email");
+        userRepo.save(user1);
+        userRepo.save(user2);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user1)
+                .pairings(new HashMap<>())
+                .participants(List.of(WichtelParticipant.builder().participant(user1).build(),
+                        WichtelParticipant.builder().participant(user2).build()))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id"))
+                .andExpect(status().isOk());
+    }
+
+    @DirtiesContext
+    @Test
+    void getMyPairing_throws_noPairingGenerated() throws Exception {
+        WichtelUser user1 = new WichtelUser("1", "name", "email");
+        WichtelUser user2 = new WichtelUser("2", "name", "email");
+        userRepo.save(user1);
+        userRepo.save(user2);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user1)
+                .pairings(new HashMap<>())
+                .participants(List.of(WichtelParticipant.builder().participant(user1).build(),
+                        WichtelParticipant.builder().participant(user2).build()))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1"))
+                .andExpect(status().isPreconditionRequired());
+    }
+
+    @DirtiesContext
+    @Test
+    void getMyPairing_getsPairing_ifRequestValid() throws Exception {
+        WichtelUser user1 = new WichtelUser("1", "name", "email");
+        WichtelUser user2 = new WichtelUser("2", "name", "email");
+        userRepo.save(user1);
+        userRepo.save(user2);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user1)
+                .pairings(Map.ofEntries(
+                        Map.entry("1",WichtelParticipant.builder().participant(user2).wishList("pony").build()),
+                        Map.entry("2",WichtelParticipant.builder().participant(user1).build())
+                ))
+                .participants(List.of(WichtelParticipant.builder().participant(user1).build(),
+                        WichtelParticipant.builder().participant(user2).build()))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                            "wishList": "pony"
+                        }"""));;
+    }
+
 }
