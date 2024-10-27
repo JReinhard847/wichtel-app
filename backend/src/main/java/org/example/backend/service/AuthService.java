@@ -3,6 +3,7 @@ package org.example.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backend.model.WichtelUser;
+import org.example.backend.repo.WichtelEventRepo;
 import org.example.backend.repo.WichtelUserRepo;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -23,22 +24,37 @@ import static java.util.Objects.requireNonNullElse;
 @RequiredArgsConstructor
 public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final WichtelUserRepo repo;
+    private final WichtelUserRepo userRepo;
+    private final WichtelEventRepo eventRepo;
 
     public WichtelUser getUserFromAuthToken(OAuth2AuthenticationToken authentication){
+        if(authentication==null){
+            throw new NoSuchElementException();
+        }
         OAuth2User oAuth2User = authentication.getPrincipal();
 
         String provider = authentication.getAuthorizedClientRegistrationId();
         String providerId = Objects.requireNonNull(oAuth2User.getAttribute("id")).toString();
-        return repo.findByOauthProviderAndOauthId(provider,providerId).orElseThrow(NoSuchElementException::new);
+        return userRepo.findByOauthProviderAndOauthId(provider,providerId).orElseThrow(NoSuchElementException::new);
     }
 
     public boolean loggedInUserHasId(OAuth2AuthenticationToken authentication,String id){
+        if(authentication==null){
+            throw new IllegalCallerException();
+        }
         WichtelUser user = getUserFromAuthToken(authentication);
         if(!user.getId().equals(id)){
             throw new IllegalCallerException();
         }
         return true;
+    }
+
+    public boolean isOrganizerOfEvent(OAuth2AuthenticationToken authentication,String eventId){
+        if(authentication==null){
+            throw new IllegalCallerException();
+        }
+        WichtelUser user = getUserFromAuthToken(authentication);
+        return eventRepo.findById(eventId).orElseThrow(NoSuchElementException::new).getOrganizer().getId().equals(user.getId());
     }
 
     @Override
@@ -49,7 +65,7 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
         String providerId = oAuth2User.getAttribute("id");
         String email = requireNonNullElse(oAuth2User.getAttribute("email"),"");
         String name = requireNonNullElse(oAuth2User.getAttribute("login"),"");
-        Optional<WichtelUser> userOptional = repo.findByOauthProviderAndOauthId(provider,providerId);
+        Optional<WichtelUser> userOptional = userRepo.findByOauthProviderAndOauthId(provider,providerId);
         if(userOptional.isEmpty()) {
             WichtelUser user = WichtelUser.builder()
                     .email(email)
@@ -57,10 +73,9 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
                     .oauthProvider(provider)
                     .oauthId(providerId)
                     .build();
-            repo.save(user);
+            userRepo.save(user);
         }
-        return new DefaultOAuth2User(null, oAuth2User.getAttributes(), "id"
-        );
+        return new DefaultOAuth2User(null, oAuth2User.getAttributes(), "id");
     }
 
 }
