@@ -1,5 +1,6 @@
 package org.example.backend.security;
 
+import org.example.backend.service.AuthService;
 import org.example.backend.service.WichtelUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ public class SecurityConfig {
     private String appUrl;
 
     @Autowired
-    private WichtelUserService userService;
+    private AuthService authService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -30,7 +31,7 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .oauth2Login(login -> login.defaultSuccessUrl(appUrl)
-                        .userInfoEndpoint(userInfo -> userInfo.userService(this.userService)));
+                        .userInfoEndpoint(userInfo -> userInfo.userService(this.authService)));
 
         return httpSecurity.build();
     }
