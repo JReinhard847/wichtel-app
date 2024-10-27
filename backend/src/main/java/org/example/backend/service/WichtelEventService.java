@@ -93,6 +93,6 @@ public class WichtelEventService {
         if(event.getPairings().isEmpty()){
             throw new IllegalStateException();
         }
-        return event.getPairings().get(user.getId());
+        return event.getPairings().get(user.getId()).withParticipant(event.getPairings().get(user.getId()).getParticipant().withId(null));
     }
 }

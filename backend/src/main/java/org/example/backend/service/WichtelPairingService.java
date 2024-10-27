@@ -17,7 +17,7 @@ public class WichtelPairingService {
                 .boxed()
                 .collect(Collectors.toMap(
                         i -> event.getParticipants().get(i).getParticipant().getId(),
-                        i -> event.getParticipants().get(i + 1).withParticipant(event.getParticipants().get(i + 1).getParticipant().withId(null))
+                        i -> event.getParticipants().get(i + 1)
                 ));
         pairings.put(event.getParticipants().getLast().getParticipant().getId(),event.getParticipants().getFirst());
         return pairings;
