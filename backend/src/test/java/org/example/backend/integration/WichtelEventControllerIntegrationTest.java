@@ -447,7 +447,7 @@ public class WichtelEventControllerIntegrationTest {
                 .andExpect(content().json("""
                         {
                             "wishList": "pony"
-                        }"""));;
+                        }"""));
     }
 
 }

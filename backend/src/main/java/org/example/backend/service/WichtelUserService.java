@@ -4,20 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.model.WichtelUser;
 import org.example.backend.model.WichtelUserDTO;
 import org.example.backend.repo.WichtelUserRepo;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
-import static java.util.Objects.requireNonNullElse;
 import static org.example.backend.util.DTOConverter.fromDTO;
 
 @Service

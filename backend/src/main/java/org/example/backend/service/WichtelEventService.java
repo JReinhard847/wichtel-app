@@ -7,8 +7,6 @@ import org.example.backend.util.DTOConverter;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.DTOConverter.toDTO;
