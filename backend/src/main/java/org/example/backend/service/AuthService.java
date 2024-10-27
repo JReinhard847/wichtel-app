@@ -1,6 +1,7 @@
 package org.example.backend.service;
 
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.model.WichtelUser;
 import org.example.backend.repo.WichtelEventRepo;
@@ -26,6 +27,7 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
 
     private final WichtelUserRepo userRepo;
     private final WichtelEventRepo eventRepo;
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
 
     public WichtelUser getUserFromAuthToken(OAuth2AuthenticationToken authentication){
         if(authentication==null){
@@ -59,7 +61,6 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
-        OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         String provider = userRequest.getClientRegistration().getRegistrationId();
         String providerId = oAuth2User.getAttribute("id");
