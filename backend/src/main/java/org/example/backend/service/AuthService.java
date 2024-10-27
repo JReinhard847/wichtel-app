@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,14 +45,10 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2UserService<OAuth2UserRequest, OAuth2User> delegate = new DefaultOAuth2UserService();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
-
         String provider = userRequest.getClientRegistration().getRegistrationId();
-        Map<String,Object> attr = oAuth2User.getAttributes();
-        String providerId = attr.get("id").toString();
-
-        String email = requireNonNullElse(attr.get("email"),"").toString();
-        String name = requireNonNullElse(attr.get("login"),"").toString();
-
+        String providerId = oAuth2User.getAttribute("id");
+        String email = requireNonNullElse(oAuth2User.getAttribute("email"),"");
+        String name = requireNonNullElse(oAuth2User.getAttribute("login"),"");
         Optional<WichtelUser> userOptional = repo.findByOauthProviderAndOauthId(provider,providerId);
         if(userOptional.isEmpty()) {
             WichtelUser user = WichtelUser.builder()
@@ -64,11 +59,7 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
                     .build();
             repo.save(user);
         }
-
-        return new DefaultOAuth2User(
-                null,
-                oAuth2User.getAttributes(),
-                "id"
+        return new DefaultOAuth2User(null, oAuth2User.getAttributes(), "id"
         );
     }
 
