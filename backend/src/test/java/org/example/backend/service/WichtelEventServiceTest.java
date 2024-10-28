@@ -18,7 +18,7 @@ class WichtelEventServiceTest {
     private final WichtelEventRepo repo = mock(WichtelEventRepo.class);
     private final IdService idService = mock(IdService.class);
     private final WichtelUserService userService = mock(WichtelUserService.class);
-    private final WichtelEventService service = new WichtelEventService(repo, idService, userService);
+    private final WichtelEventService service = new WichtelEventService(repo, idService, userService,null);
 
     @Test
     void createEmptyEvent_createsEvent() {

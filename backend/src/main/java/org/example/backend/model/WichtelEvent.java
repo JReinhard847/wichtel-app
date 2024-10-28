@@ -12,22 +12,17 @@ import java.util.Map;
 @Data
 @AllArgsConstructor
 @Builder
+@With
 public class WichtelEvent {
     String id;
     WichtelUser organizer;
-    @With
     String title;
-    @With
     String description;
-    @With
     String budget;
-    @With
     String image;
-    @With
     LocalDateTime drawDate;
-    @With
     LocalDateTime giftExchangeDate;
     List<WichtelParticipant> participants;
-    Map<WichtelParticipant,WichtelParticipant> pairings;
+    Map<String,WichtelParticipant> pairings;
 
 }
