@@ -1,7 +1,7 @@
 package org.example.backend.service;
 
 
-import lombok.AllArgsConstructor;
+
 import lombok.RequiredArgsConstructor;
 import org.example.backend.model.WichtelUser;
 import org.example.backend.repo.WichtelEventRepo;
@@ -63,7 +63,9 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         String provider = userRequest.getClientRegistration().getRegistrationId();
-        String providerId = oAuth2User.getAttribute("id");
+        String providerId = Optional.ofNullable(oAuth2User.getAttribute("id"))
+                .map(Object::toString)
+                .orElse("");
         String email = requireNonNullElse(oAuth2User.getAttribute("email"),"");
         String name = requireNonNullElse(oAuth2User.getAttribute("login"),"");
         Optional<WichtelUser> userOptional = userRepo.findByOauthProviderAndOauthId(provider,providerId);
