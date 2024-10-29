@@ -42,13 +42,18 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
 
     public boolean loggedInUserHasId(OAuth2AuthenticationToken authentication,String id){
         if(authentication==null){
-            throw new IllegalCallerException();
+            return false;
         }
         WichtelUser user = getUserFromAuthToken(authentication);
-        if(!user.getId().equals(id)){
-            throw new IllegalCallerException();
+        return user.getId().equals(id);
+    }
+
+    public boolean isOrganizerOfEvent(OAuth2AuthenticationToken authentication,String eventId){
+        if(authentication==null){
+            return false;
         }
-        return true;
+        WichtelUser user = getUserFromAuthToken(authentication);
+        return eventRepo.findById(eventId).orElseThrow(NoSuchElementException::new).getOrganizer().getId().equals(user.getId());
     }
 
     @Override

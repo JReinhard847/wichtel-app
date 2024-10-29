@@ -1,6 +1,5 @@
 package org.example.backend.integration;
 
-import org.example.backend.model.InvitationStatus;
 import org.example.backend.model.WichtelEvent;
 import org.example.backend.model.WichtelParticipant;
 import org.example.backend.model.WichtelUser;
@@ -11,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -19,6 +20,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,6 +36,17 @@ public class WichtelEventControllerIntegrationTest {
 
     @Autowired
     private WichtelUserRepo userRepo;
+
+    private final ClientRegistration dummyRegistration = ClientRegistration
+            .withRegistrationId("github")
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .clientId("test")
+            .clientSecret("")
+            .clientName("")
+            .redirectUri("test")
+            .authorizationUri("test")
+            .tokenUri("test")
+            .build();
 
     @DirtiesContext
     @Test
@@ -75,16 +88,31 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void createEvent_throws_ifCreatingUserDoesNotExist() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/1"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @DirtiesContext
+    @Test
+    void createEvent_throws_ifNotLoggedIn() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event")
+                )
                 .andExpect(status().isNotFound());
     }
 
     @DirtiesContext
     @Test
     void createEvent_createsAnEvent_ifCreatingUserExists() throws Exception {
-        userRepo.save(WichtelUser.builder().id("1").name("name").email("email").build());
+        userRepo.save(WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/1"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isOk());
         assertEquals(1, repo.count());
     }
@@ -123,11 +151,20 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void delete_shouldDeleteEvent() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+    void delete_shouldDeleteEvent_ifCalledByOrganizer() throws Exception {
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(organizer)
+                .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id"))
+        userRepo.save(organizer);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isOk());
 
         assertTrue(repo.findById("id").isEmpty());
@@ -135,8 +172,37 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
+    void delete_shouldThrow_ifCalledByNonOrganizer() throws Exception {
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        WichtelUser fakeOrganizer = WichtelUser.builder().id("2").name("name").email("email").oauthId("githubid2").oauthProvider("github").build();
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(organizer)
+                .build();
+        repo.save(event);
+
+        userRepo.save(organizer);
+        userRepo.save(fakeOrganizer);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid2"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isUnauthorized());
+
+        assertTrue(repo.findById("id").isPresent());
+    }
+
+
+    @DirtiesContext
+    @Test
     void update_shouldThrow_ifEventDoesntExist() throws Exception {
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(organizer);
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -157,11 +223,86 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
+    void update_shouldThrow_ifCalledByNonOrganizer() throws Exception {
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        WichtelUser fakeOrganizer = WichtelUser.builder().id("2").name("name").email("email").oauthId("githubid2").oauthProvider("github").build();
+        userRepo.save(fakeOrganizer);
+        userRepo.save(organizer);
+
+        WichtelEvent event = WichtelEvent.builder()
+                .organizer(organizer)
+                .id("id")
+                .build();
+        repo.save(event);
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid2"))
+                                .clientRegistration(dummyRegistration))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                "organizer": {
+                                                "name": "name",
+                                                "email": "email"
+                                              },
+                                "title": "test title",
+                                "description":"",
+                                "budget":"",
+                                "image":"",
+                                "drawDate":null,
+                                "giftExchangeDate":null,
+                                "participants":[]
+                                }"""))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @DirtiesContext
+    @Test
+    void update_shouldThrow_ifNotLoggedIn() throws Exception {
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(organizer);
+
+        WichtelEvent event = WichtelEvent.builder()
+                .organizer(organizer)
+                .id("id")
+                .build();
+        repo.save(event);
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                "organizer": {
+                                                "name": "name",
+                                                "email": "email"
+                                              },
+                                "title": "test title",
+                                "description":"",
+                                "budget":"",
+                                "image":"",
+                                "drawDate":null,
+                                "giftExchangeDate":null,
+                                "participants":[]
+                                }"""))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @DirtiesContext
+    @Test
     void update_shouldUpdate_ifEventInDB() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(organizer);
+
+        WichtelEvent event = WichtelEvent.builder()
+                .organizer(organizer)
+                .id("id")
+                .participants(Collections.emptyList())
+                .build();
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -198,59 +339,127 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void addParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
+    void addParticipant_shouldThrow_NotCalledByUserOrOrganizer() throws Exception {
+        WichtelUser user = WichtelUser.builder().id("2").oauthProvider("github").oauthId("githubid").build();
+        userRepo.save(user);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(WichtelUser.builder().id("1").build())
+                .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isUnauthorized());
     }
 
     @DirtiesContext
     @Test
     void addParticipant_shouldThrow_ifEventDoesntExistInDB() throws Exception {
-        userRepo.save(WichtelUser.builder().id("1").name("name").email("email").build());
+        userRepo.save(WichtelUser.builder().id("1").oauthProvider("github").oauthId("githubid").build());
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid2"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isNotFound());
     }
 
     @DirtiesContext
     @Test
     void addParticipant_shouldThrow_ifAlreadyParticipating() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
         userRepo.save(user);
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
+                .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isConflict());
     }
 
     @DirtiesContext
     @Test
-    void addParticipant_shouldAdd_ifRequestValid() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+    void addParticipant_shouldAdd_ifCalledByOrganizer() throws Exception {
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
         userRepo.save(user);
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>())
+                .build();
         repo.save(event);
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
-                        "participants": [{"participant":{"name":"name","email":"email"},"invitationStatus":"PENDING"}]
-                        }
-                        """));
+                              "participants": [{
+                                                "participant": { "name": "name","email":"email"},
+                                                "invitationStatus": "PENDING"
+                                                }
+                                                ]
+                        }"""));
     }
 
     @DirtiesContext
     @Test
-    void updateParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
+    void addParticipant_shouldAdd_ifCalledByUser() throws Exception {
+        WichtelUser organizer = WichtelUser.builder().id("2").build();
+        userRepo.save(organizer);
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(user);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(organizer)
+                .participants(new ArrayList<>())
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                              "participants": [{
+                                                "participant": { "name": "name","email":"email"},
+                                                "invitationStatus": "PENDING"
+                                                }
+                                                ]
+                        }"""));
+    }
+
+    @DirtiesContext
+    @Test
+    void updateParticipant_shouldThrow_NotCalledByUser() throws Exception {
         WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
+        userRepo.save(user);
+        WichtelUser fakeUser = WichtelUser.builder().id("2").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(fakeUser);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
+                .build();
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -259,7 +468,7 @@ public class WichtelEventControllerIntegrationTest {
                                       "wishList": "",
                                       "address": ""
                                 }"""))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnauthorized());
     }
 
     @DirtiesContext
@@ -269,6 +478,9 @@ public class WichtelEventControllerIntegrationTest {
         userRepo.save(user);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -283,12 +495,19 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void updateParticipant_shouldThrow_ifUserIsNotParticipating() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").oauthProvider("github").oauthId("githubid").build();
         userRepo.save(user);
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>())
+                .build();
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -303,12 +522,19 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void updateParticipant_shouldUpdate_ifRequestValid() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
         userRepo.save(user);
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
+                .build();
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -328,38 +554,54 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void deleteParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
+    void deleteParticipant_shouldThrow_NotCalledByUserOrOrganizer() throws Exception {
         WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
-        WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
+        userRepo.save(user);
+        WichtelUser fakeUser = WichtelUser.builder().id("2").oauthProvider("github").oauthId("githubid").build();
+        userRepo.save(fakeUser);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
+                .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
-                .andExpect(status().isNotFound());
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isUnauthorized());
     }
 
     @DirtiesContext
     @Test
     void deleteParticipant_shouldThrow_ifEventDoesntExist() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").oauthProvider("github").oauthId("githubid").build();
         userRepo.save(user);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isNotFound());
     }
 
     @DirtiesContext
     @Test
-    void deleteParticipant_shouldDelete_ifRequestValid() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+    void deleteParticipant_shouldDelete_ifCalledByOrganizer() throws Exception {
+        WichtelUser user = WichtelUser.builder().id("1").oauthId("githubid").oauthProvider("github").build();
         userRepo.save(user);
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
                 .organizer(user)
-                .participants(new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))))
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
                 .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
@@ -368,17 +610,67 @@ public class WichtelEventControllerIntegrationTest {
 
     @DirtiesContext
     @Test
-    void generatePairings_throws_ifNotEnoughParticipants() throws Exception {
-        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+    void deleteParticipant_shouldDelete_ifCalledByParticipatingUser() throws Exception {
+        WichtelUser user = WichtelUser.builder().id("1").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(user);
+        WichtelUser organizer = WichtelUser.builder().id("2").build();
+        userRepo.save(organizer);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(organizer)
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                              "participants": [ ]}"""));
+    }
+
+    @DirtiesContext
+    @Test
+    void generatePairings_throws_ifNotCalledByOrganizer() throws Exception {
+        WichtelUser user = WichtelUser.builder().id("1").build();
+        WichtelUser fakeUser = WichtelUser.builder().id("2").oauthProvider("github").oauthId("githubid").build();
+        userRepo.save(fakeUser);
+
         userRepo.save(user);
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
                 .organizer(user)
-                .participants(List.of())
+                .participants(new ArrayList<>())
                 .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @DirtiesContext
+    @Test
+    void generatePairings_throws_ifNotEnoughParticipants() throws Exception {
+        WichtelUser user = WichtelUser.builder().id("1").oauthProvider("github").oauthId("githubid").build();
+        userRepo.save(user);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user)
+                .participants(new ArrayList<>(List.of(WichtelParticipant.builder().participant(user).build())))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isPreconditionRequired());
 
     }
@@ -386,7 +678,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void generatePairings_generates_ifRequestValid() throws Exception {
-        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").oauthId("githubid").oauthProvider("github").build();
         WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
         userRepo.save(user1);
         userRepo.save(user2);
@@ -399,14 +691,17 @@ public class WichtelEventControllerIntegrationTest {
                 .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/event/pairings/id")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isOk());
     }
 
     @DirtiesContext
     @Test
-    void getMyPairing_throws_noPairingGenerated() throws Exception {
-        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").build();
+    void getMyPairing_throws_IfNoPairingGenerated() throws Exception {
+        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").oauthProvider("github").oauthId("githubid").build();
         WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
         userRepo.save(user1);
         userRepo.save(user2);
@@ -419,23 +714,26 @@ public class WichtelEventControllerIntegrationTest {
                 .build();
         repo.save(event);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isPreconditionRequired());
     }
 
     @DirtiesContext
     @Test
-    void getMyPairing_getsPairing_ifRequestValid() throws Exception {
-        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").build();
-        WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
+    void getMyPairing_throws_ifNotLoggedIn() throws Exception {
+        WichtelUser user1 = WichtelUser.builder().id("1").build();
+        WichtelUser user2 = WichtelUser.builder().id("2").build();
         userRepo.save(user1);
         userRepo.save(user2);
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
                 .organizer(user1)
                 .pairings(Map.ofEntries(
-                        Map.entry("1",WichtelParticipant.builder().participant(user2).wishList("pony").build()),
-                        Map.entry("2",WichtelParticipant.builder().participant(user1).build())
+                        Map.entry("1", WichtelParticipant.builder().participant(user2).wishList("pony").build()),
+                        Map.entry("2", WichtelParticipant.builder().participant(user1).build())
                 ))
                 .participants(List.of(WichtelParticipant.builder().participant(user1).build(),
                         WichtelParticipant.builder().participant(user2).build()))
@@ -443,6 +741,62 @@ public class WichtelEventControllerIntegrationTest {
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @DirtiesContext
+    @Test
+    void getMyPairing_throws_ifCalledByWrongUser() throws Exception {
+        WichtelUser user1 = WichtelUser.builder().id("1").build();
+        WichtelUser user2 = WichtelUser.builder().id("2").build();
+        WichtelUser fakeUser = WichtelUser.builder().id("3").oauthId("githubid").oauthProvider("github").build();
+        userRepo.save(user1);
+        userRepo.save(user2);
+        userRepo.save(fakeUser);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user1)
+                .pairings(Map.ofEntries(
+                        Map.entry("1", WichtelParticipant.builder().participant(user2).wishList("pony").build()),
+                        Map.entry("2", WichtelParticipant.builder().participant(user1).build())
+                ))
+                .participants(List.of(WichtelParticipant.builder().participant(user1).build(),
+                        WichtelParticipant.builder().participant(user2).build()))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @DirtiesContext
+    @Test
+    void getMyPairing_getsPairing_ifRequestValid() throws Exception {
+        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").oauthProvider("github").oauthId("githubid").build();
+        WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
+        userRepo.save(user1);
+        userRepo.save(user2);
+        WichtelEvent event = WichtelEvent.builder()
+                .id("id")
+                .organizer(user1)
+                .pairings(Map.ofEntries(
+                        Map.entry("1", WichtelParticipant.builder().participant(user2).wishList("pony").build()),
+                        Map.entry("2", WichtelParticipant.builder().participant(user1).build())
+                ))
+                .participants(List.of(WichtelParticipant.builder().participant(user1).build(),
+                        WichtelParticipant.builder().participant(user2).build()))
+                .build();
+        repo.save(event);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id/1")
+                        .with(oidcLogin()
+                                .userInfoToken(token -> token.claim("id", "githubid"))
+                                .clientRegistration(dummyRegistration)))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
                         {
