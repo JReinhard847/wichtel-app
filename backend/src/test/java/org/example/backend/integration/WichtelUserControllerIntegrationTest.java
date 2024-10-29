@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -75,6 +74,13 @@ class WichtelUserControllerIntegrationTest {
         mockMvc.perform(MockMvcRequestBuilders.get("/api/user/me")
                         .with(oidcLogin().userInfoToken(token -> token
                                 .claim("id", "1"))))
+                .andExpect(status().isNotFound());
+    }
+
+    @DirtiesContext
+    @Test
+    void findMe_shouldThrow_ifNotLoggedIn() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/user/me"))
                 .andExpect(status().isNotFound());
     }
 
