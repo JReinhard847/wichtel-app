@@ -8,6 +8,7 @@ import org.example.backend.service.WichtelUserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -34,6 +35,8 @@ public class WichtelUserController {
     void deleteById(@PathVariable String id, OAuth2AuthenticationToken authentication){
         if(authService.loggedInUserHasId(authentication,id)){
             service.deleteById(id);
+        } else {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
 
