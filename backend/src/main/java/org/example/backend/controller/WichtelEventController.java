@@ -121,10 +121,4 @@ public class WichtelEventController {
     public String handleIllegalStateException(IllegalStateException exception) {
         return exception.getMessage();
     }
-
-    @ExceptionHandler(IllegalCallerException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public String handleIllegalCallerException(IllegalCallerException exception) {
-        return exception.getMessage();
-    }
 }
