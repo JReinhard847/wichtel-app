@@ -46,7 +46,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void findAll_getsEvent_ifEventInDB() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
 
         repo.save(event);
 
@@ -82,7 +82,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void createEvent_createsAnEvent_ifCreatingUserExists() throws Exception {
-        userRepo.save(new WichtelUser("1", "name", "email"));
+        userRepo.save(WichtelUser.builder().id("1").name("name").email("email").build());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/1"))
                 .andExpect(status().isOk());
@@ -99,7 +99,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void findById_shouldReturnUser_ifInDB() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/event/id"))
@@ -124,7 +124,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void delete_shouldDeleteEvent() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "test title", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id"))
@@ -158,7 +158,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void update_shouldUpdate_ifEventInDB() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id")
@@ -199,7 +199,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void addParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
         repo.save(event);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
@@ -209,7 +209,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void addParticipant_shouldThrow_ifEventDoesntExistInDB() throws Exception {
-        userRepo.save(new WichtelUser("1", "name", "email"));
+        userRepo.save(WichtelUser.builder().id("1").name("name").email("email").build());
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/event/id/1"))
                 .andExpect(status().isNotFound());
@@ -218,7 +218,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void addParticipant_shouldThrow_ifAlreadyParticipating() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         repo.save(event);
@@ -230,7 +230,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void addParticipant_shouldAdd_ifRequestValid() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
         repo.save(event);
@@ -246,7 +246,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void updateParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         repo.save(event);
 
@@ -265,7 +265,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void updateParticipant_shouldThrow_ifEventDoesntExist() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/event/id/1")
@@ -283,7 +283,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void updateParticipant_shouldThrow_ifUserIsNotParticipating() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(), new HashMap<>());
         repo.save(event);
@@ -303,7 +303,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void updateParticipant_shouldUpdate_ifRequestValid() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         repo.save(event);
@@ -329,7 +329,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void deleteParticipant_shouldThrow_ifUserDoesntExistInDB() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelEvent event = new WichtelEvent("id", user, "", "", "", "", null, null, new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         repo.save(event);
 
@@ -340,7 +340,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void deleteParticipant_shouldThrow_ifEventDoesntExist() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
 
         mockMvc.perform(MockMvcRequestBuilders.delete("/api/event/id/1"))
@@ -350,7 +350,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void deleteParticipant_shouldDelete_ifRequestValid() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
@@ -369,7 +369,7 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void generatePairings_throws_ifNotEnoughParticipants() throws Exception {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         userRepo.save(user);
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
@@ -386,8 +386,8 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void generatePairings_generates_ifRequestValid() throws Exception {
-        WichtelUser user1 = new WichtelUser("1", "name", "email");
-        WichtelUser user2 = new WichtelUser("2", "name", "email");
+        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
         userRepo.save(user1);
         userRepo.save(user2);
         WichtelEvent event = WichtelEvent.builder()
@@ -406,8 +406,8 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void getMyPairing_throws_noPairingGenerated() throws Exception {
-        WichtelUser user1 = new WichtelUser("1", "name", "email");
-        WichtelUser user2 = new WichtelUser("2", "name", "email");
+        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
         userRepo.save(user1);
         userRepo.save(user2);
         WichtelEvent event = WichtelEvent.builder()
@@ -426,8 +426,8 @@ public class WichtelEventControllerIntegrationTest {
     @DirtiesContext
     @Test
     void getMyPairing_getsPairing_ifRequestValid() throws Exception {
-        WichtelUser user1 = new WichtelUser("1", "name", "email");
-        WichtelUser user2 = new WichtelUser("2", "name", "email");
+        WichtelUser user1 = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser user2 = WichtelUser.builder().id("2").name("name").email("email").build();
         userRepo.save(user1);
         userRepo.save(user2);
         WichtelEvent event = WichtelEvent.builder()
@@ -447,7 +447,7 @@ public class WichtelEventControllerIntegrationTest {
                 .andExpect(content().json("""
                         {
                             "wishList": "pony"
-                        }"""));;
+                        }"""));
     }
 
 }

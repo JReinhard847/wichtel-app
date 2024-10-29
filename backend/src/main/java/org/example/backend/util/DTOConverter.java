@@ -17,7 +17,7 @@ public class DTOConverter {
     }
 
     public static WichtelUser fromDTO(WichtelUserDTO dto, String id) {
-        return new WichtelUser(id, dto.getName(), dto.getEmail());
+        return WichtelUser.builder().id(id).name(dto.getName()).email(dto.getEmail()).build();
     }
 
     public static WichtelParticipantDTO toDTO(WichtelParticipant participant) {

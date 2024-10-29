@@ -15,7 +15,7 @@ class DTOConverterTest {
 
     @Test
     void wichtelUserConverter() {
-        WichtelUser expected = new WichtelUser("1","name","email");
+        WichtelUser expected = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelUserDTO dto = toDTO(expected);
         WichtelUser actual = fromDTO(dto,"1");
         assertEquals(expected,actual);
@@ -23,7 +23,7 @@ class DTOConverterTest {
 
     @Test
     void wichtelParticipantConverter() {
-        WichtelUser user = new WichtelUser("1","name","email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelParticipant expected = new WichtelParticipant(user, InvitationStatus.PENDING,"wishList","address");
         WichtelParticipantDTO dto = toDTO(expected);
         WichtelParticipant actual = fromDTO(dto,user.getId(),"wishList","address");
@@ -32,7 +32,7 @@ class DTOConverterTest {
 
     @Test
     void wichtelEventConverter() {
-        WichtelUser user = new WichtelUser("1","name","email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelEvent expected = new WichtelEvent("id",user,
                 "title",
                 "description",

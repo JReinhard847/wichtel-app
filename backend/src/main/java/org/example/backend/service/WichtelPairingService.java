@@ -2,7 +2,6 @@ package org.example.backend.service;
 
 import org.example.backend.model.WichtelEvent;
 import org.example.backend.model.WichtelParticipant;
-import org.example.backend.model.WichtelUser;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;

@@ -22,9 +22,9 @@ class WichtelEventServiceTest {
 
     @Test
     void createEmptyEvent_createsEvent() {
-        when(userService.findById("1")).thenReturn(new WichtelUser("1", "name", "email"));
+        when(userService.findById("1")).thenReturn(WichtelUser.builder().id("1").name("name").email("email").build());
         when(idService.generateId()).thenReturn("id");
-        WichtelEvent expected = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelEvent expected = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         when(repo.save(any(WichtelEvent.class))).thenReturn(expected);
         String actual = service.createEmptyEvent("1");
         assertEquals(expected.getId(), actual);
@@ -39,7 +39,7 @@ class WichtelEventServiceTest {
 
     @Test
     void findById_findsEvent_ifInDB() {
-        WichtelEvent expected = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelEvent expected = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(expected));
         WichtelEventDTO actual = service.findById("id");
         verify(repo).findById("id");
@@ -48,8 +48,8 @@ class WichtelEventServiceTest {
 
     @Test
     void update() {
-        WichtelEvent previous = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
-        WichtelUser organizer = new WichtelUser("1", "name", "email");
+        WichtelEvent previous = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
+        WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelEventDTO updated = new WichtelEventDTO(toDTO(organizer),
                 "title",
                 "description",
@@ -67,17 +67,17 @@ class WichtelEventServiceTest {
 
     @Test
     void addParticipant_throws_ifAlreadyInEvent() {
-        WichtelUser user = new WichtelUser("1", "name", "email");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, List.of(new WichtelParticipant(user, null, null, null)), new HashMap<>());
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, List.of(new WichtelParticipant(user, null, null, null)), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
         assertThrows(IllegalArgumentException.class, () -> service.addParticipant("id", "1"));
     }
 
     @Test
     void addParticipant_addsUserToEvent_ifNotAlreadyPresent() {
-        WichtelUser user = new WichtelUser("1", "name", "email");
-        WichtelUser secondUser = new WichtelUser("2", "name2", "email2");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user, null, null, null))), new HashMap<>());
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelUser secondUser = WichtelUser.builder().id("2").name("name").email("email").build();
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user, null, null, null))), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
         when(userService.findById("2")).thenReturn(secondUser);
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
@@ -88,16 +88,16 @@ class WichtelEventServiceTest {
 
     @Test
     void updateParticipant_throws_ifUserIsNotInEvent() {
-        WichtelUser user = new WichtelUser("1", "name", "email");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, List.of(new WichtelParticipant(user, null, null, null)), new HashMap<>());
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, List.of(new WichtelParticipant(user, null, null, null)), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
         assertThrows(IllegalArgumentException.class, () -> service.updateParticipant("id", new WichtelParticipant(null, null, null, null), "2"));
     }
 
     @Test
     void updateParticipant_updates_ifUserIsInEvent() {
-        WichtelUser user = new WichtelUser("1", "name", "email");
-        WichtelEvent event = new WichtelEvent("id", new WichtelUser("1", "name", "email"), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
+        WichtelEvent event = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, new ArrayList<>(Arrays.asList(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))), new HashMap<>());
         when(repo.findById("id")).thenReturn(Optional.of(event));
         when(userService.findById("1")).thenReturn(user);
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
@@ -108,7 +108,7 @@ class WichtelEventServiceTest {
 
     @Test
     void deleteParticipant_throws_ifUserDoesntExist() {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
                 .participants(new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))))
@@ -120,7 +120,7 @@ class WichtelEventServiceTest {
 
     @Test
     void deleteParticipant_deletes_ifRequestValid() {
-        WichtelUser user = new WichtelUser("1", "name", "email");
+        WichtelUser user = WichtelUser.builder().id("1").name("name").email("email").build();
         WichtelEvent event = WichtelEvent.builder()
                 .id("id")
                 .participants(new ArrayList<>(List.of(new WichtelParticipant(user, InvitationStatus.PENDING, "", ""))))

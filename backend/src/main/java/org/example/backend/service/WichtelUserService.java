@@ -13,7 +13,7 @@ import static org.example.backend.util.DTOConverter.fromDTO;
 
 @Service
 @RequiredArgsConstructor
-public class WichtelUserService {
+public class WichtelUserService{
 
     private final WichtelUserRepo repo;
     private final IdService idService;
@@ -40,5 +40,6 @@ public class WichtelUserService {
     public List<WichtelUser> findAll(){
         return repo.findAll();
     }
+
 
 }
