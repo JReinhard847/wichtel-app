@@ -4,6 +4,9 @@ import org.example.backend.model.WichtelEvent;
 import org.example.backend.model.WichtelParticipant;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -12,13 +15,15 @@ import java.util.stream.IntStream;
 public class WichtelPairingService {
 
     public Map<String, WichtelParticipant> generateSimplePairings(WichtelEvent event){
-        Map<String,WichtelParticipant> pairings = IntStream.range(0, event.getParticipants().size() - 1)
+        List<WichtelParticipant> toShuffle = new ArrayList<>(event.getParticipants());
+        Collections.shuffle(toShuffle);
+        Map<String,WichtelParticipant> pairings = IntStream.range(0, toShuffle.size() - 1)
                 .boxed()
                 .collect(Collectors.toMap(
-                        i -> event.getParticipants().get(i).getParticipant().getId(),
-                        i -> event.getParticipants().get(i + 1)
+                        i -> toShuffle.get(i).getParticipant().getId(),
+                        i -> toShuffle.get(i + 1)
                 ));
-        pairings.put(event.getParticipants().getLast().getParticipant().getId(),event.getParticipants().getFirst());
+        pairings.put(toShuffle.getLast().getParticipant().getId(),toShuffle.getFirst());
         return pairings;
     }
 }
