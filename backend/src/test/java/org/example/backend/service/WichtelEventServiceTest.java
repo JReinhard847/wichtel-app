@@ -2,13 +2,11 @@ package org.example.backend.service;
 
 import org.example.backend.model.*;
 import org.example.backend.repo.WichtelEventRepo;
-import org.example.backend.repo.WichtelUserRepo;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.DTOConverter.toDTO;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

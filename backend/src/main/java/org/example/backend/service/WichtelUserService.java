@@ -4,16 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.model.WichtelUser;
 import org.example.backend.model.WichtelUserDTO;
 import org.example.backend.repo.WichtelUserRepo;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.stereotype.Service;
 
-import java.beans.PropertyDescriptor;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.UpdateUtil.updateIgnoringNulls;
