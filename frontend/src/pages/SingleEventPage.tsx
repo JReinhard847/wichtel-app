@@ -250,7 +250,6 @@ export default function SingleEventPage() {
                     </Box>
                 </CardContent>
             </Card>
-            <Button onClick={() => setAddUsersOpen(true)}>Test</Button>
             <EditEventDialog open={editDialogOpen} setOpen={setEditDialogOpen} fetchData={fetchEventData}
                              event={editEvent} setEvent={setEditEvent}/>
             <AddWishListDialog participant={user} eventId={event.id} open={addWishListOpen}
