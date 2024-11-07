@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+                .logout(logout -> logout.logoutSuccessUrl(appUrl).logoutUrl("/api/auth/logout"))
                 .oauth2Login(login -> login.defaultSuccessUrl(appUrl)
                         .userInfoEndpoint(userInfo -> userInfo.userService(authService)));
 

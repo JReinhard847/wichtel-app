@@ -42,9 +42,11 @@ class WichtelPairingServiceTest {
                 .participant(WichtelUser.builder().id("1").name("name").email("email").build()).build();
         WichtelParticipant p2 = WichtelParticipant.builder()
                 .participant(WichtelUser.builder().id("2").name("name").email("email").build()).build();
+        WichtelParticipant p3 = WichtelParticipant.builder()
+                .participant(WichtelUser.builder().id("3").name("name").email("email").build()).build();
         WichtelEvent event = WichtelEvent.builder()
                 .participants(
-                        List.of(p1,p2)
+                        List.of(p1,p2,p3)
                 ).build();
         Map<String, WichtelParticipant> pairing = service.generateSimplePairings(event);
         assertTrue(isValidPairing(pairing,event));

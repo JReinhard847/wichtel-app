@@ -9,11 +9,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-
 @Data
 @AllArgsConstructor
 @Builder
 public class WichtelEventDTO {
+    @With
+    String id;
     WichtelUserDTO organizer;
     @With
     String title;
@@ -28,5 +29,6 @@ public class WichtelEventDTO {
     @With
     LocalDateTime giftExchangeDate;
     List<WichtelParticipantDTO> participants;
+    boolean hasPairing;
 
 }

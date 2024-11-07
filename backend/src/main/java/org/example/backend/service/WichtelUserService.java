@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.example.backend.util.DTOConverter.fromDTO;
+import static org.example.backend.util.UpdateUtil.updateIgnoringNulls;
 
 @Service
 @RequiredArgsConstructor
@@ -31,15 +32,15 @@ public class WichtelUserService{
     }
 
     public WichtelUser update(WichtelUserDTO dto,String id){
-        if(repo.findById(id).isEmpty()){
-            throw new NoSuchElementException();
-        }
-        return repo.save(fromDTO(dto,id));
+        WichtelUser user = repo.findById(id).orElseThrow(NoSuchElementException::new);
+        updateIgnoringNulls(fromDTO(dto,id),user);
+        return repo.save(user);
     }
 
     public List<WichtelUser> findAll(){
         return repo.findAll();
     }
+
 
 
 }

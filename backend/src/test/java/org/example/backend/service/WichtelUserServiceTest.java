@@ -38,7 +38,7 @@ class WichtelUserServiceTest {
 
     @Test
     void save() {
-        WichtelUserDTO dto = new WichtelUserDTO("name","email");
+        WichtelUserDTO dto = WichtelUserDTO.builder().name("name").email("email").build();
         WichtelUser expected = WichtelUser.builder().id("1").name("name").email("email").build();
 
         when(idService.generateId()).thenReturn("1");
@@ -52,7 +52,7 @@ class WichtelUserServiceTest {
     @Test
     void update() {
         WichtelUser previous = WichtelUser.builder().id("1").name("name").email("email").build();
-        WichtelUserDTO updatedDTO = new WichtelUserDTO("name2","email");
+        WichtelUserDTO updatedDTO = WichtelUserDTO.builder().name("name2").email("email").build();
         WichtelUser expected = WichtelUser.builder().id("1").name("name").email("email").build();
         when(repo.findById("1")).thenReturn(Optional.of(previous));
         when(repo.save(fromDTO(updatedDTO,"1"))).thenReturn(expected);

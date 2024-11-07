@@ -8,6 +8,9 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class WichtelUserDTO {
+    String id;
     String name;
+    String oauthName;
+    String oauthProvider;
     String email;
 }

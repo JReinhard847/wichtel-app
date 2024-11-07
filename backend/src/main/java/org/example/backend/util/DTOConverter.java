@@ -13,7 +13,7 @@ public class DTOConverter {
     }
 
     public static WichtelUserDTO toDTO(WichtelUser user) {
-        return new WichtelUserDTO(user.getName(), user.getEmail());
+        return WichtelUserDTO.builder().oauthName(user.getOauthName()).name(user.getName()).oauthProvider(user.getOauthProvider()).email(user.getEmail()).id(user.getId()).build();
     }
 
     public static WichtelUser fromDTO(WichtelUserDTO dto, String id) {
@@ -32,7 +32,7 @@ public class DTOConverter {
         List<WichtelParticipantDTO> participantDTOList = event.getParticipants().stream()
                 .map(DTOConverter::toDTO)
                 .toList();
-        return new WichtelEventDTO(toDTO(event.getOrganizer()), event.getTitle(), event.getDescription(), event.getBudget(), event.getImage(), event.getDrawDate(), event.getGiftExchangeDate(), participantDTOList);
+        return new WichtelEventDTO(event.getId(),toDTO(event.getOrganizer()), event.getTitle(), event.getDescription(), event.getBudget(), event.getImage(), event.getDrawDate(), event.getGiftExchangeDate(), participantDTOList,event.getPairings()==null||!event.getPairings().isEmpty());
     }
 
     public static WichtelEvent fromDTO(WichtelEventDTO dto, String id, WichtelUser organizer, List<WichtelParticipant> participants, Map<String,WichtelParticipant> pairing){

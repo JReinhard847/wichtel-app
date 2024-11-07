@@ -2,10 +2,13 @@ package org.example.backend.util;
 
 import org.example.backend.model.*;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
+import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.DTOConverter.toDTO;
@@ -45,5 +48,29 @@ class DTOConverterTest {
         WichtelEventDTO dto = toDTO(expected);
         WichtelEvent actual = fromDTO(dto,"id",user,List.of(new WichtelParticipant(user,InvitationStatus.PENDING,"wishList","address")),new HashMap<>());
         assertEquals(expected,actual);
+    }
+
+    public void updateIgnoringNulls(Object update,Object original){
+        final BeanWrapper src = new BeanWrapperImpl(update);
+        PropertyDescriptor[] pds = src.getPropertyDescriptors();
+
+        Set<String> nullAttributes = new HashSet<>();
+        for (PropertyDescriptor pd : pds) {
+            Object srcValue = src.getPropertyValue(pd.getName());
+            if (srcValue == null) nullAttributes.add(pd.getName());
+        }
+        BeanUtils.copyProperties(update,original,nullAttributes.toArray(new String[0]));
+    }
+
+
+    @Test
+    void testNonNullUpdater(){
+        WichtelUser originalUser = WichtelUser.builder().name("old name").email("old email").build();
+        WichtelUser updatedUser = WichtelUser.builder().name("new name").build();
+
+        updateIgnoringNulls(updatedUser,originalUser);
+
+        assertEquals("new name",originalUser.getName());
+        assertEquals("old email",originalUser.getEmail());
     }
 }

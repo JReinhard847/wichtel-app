@@ -10,6 +10,7 @@ import java.util.*;
 
 import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.DTOConverter.toDTO;
+import static org.example.backend.util.UpdateUtil.updateIgnoringNulls;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +40,8 @@ public class WichtelEventService {
 
     public WichtelEventDTO update(WichtelEventDTO updatedDto, String id) {
         WichtelEvent event = repo.findById(id).orElseThrow(NoSuchElementException::new);
-        return toDTO(repo.save(fromDTO(updatedDto, id, event.getOrganizer(), event.getParticipants(), event.getPairings())));
+        updateIgnoringNulls(fromDTO(updatedDto, id, event.getOrganizer(), event.getParticipants(), event.getPairings()),event);
+        return toDTO(repo.save(event));
     }
 
     public void deleteById(String id) {

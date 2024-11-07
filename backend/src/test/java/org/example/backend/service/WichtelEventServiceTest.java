@@ -2,13 +2,11 @@ package org.example.backend.service;
 
 import org.example.backend.model.*;
 import org.example.backend.repo.WichtelEventRepo;
-import org.example.backend.repo.WichtelUserRepo;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.*;
 
-import static org.example.backend.util.DTOConverter.fromDTO;
 import static org.example.backend.util.DTOConverter.toDTO;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,14 +48,16 @@ class WichtelEventServiceTest {
     void update() {
         WichtelEvent previous = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").build();
-        WichtelEventDTO updated = new WichtelEventDTO(toDTO(organizer),
+        WichtelEventDTO updated = new WichtelEventDTO("id",
+                toDTO(organizer),
                 "title",
                 "description",
                 "budged",
                 "image",
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                Collections.emptyList());
+                Collections.emptyList(),
+                false);
         when(repo.findById("id")).thenReturn(Optional.of(previous));
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
         WichtelEventDTO actual = service.update(updated, "id");

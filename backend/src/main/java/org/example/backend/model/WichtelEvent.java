@@ -24,5 +24,4 @@ public class WichtelEvent {
     LocalDateTime giftExchangeDate;
     List<WichtelParticipant> participants;
     Map<String,WichtelParticipant> pairings;
-
 }

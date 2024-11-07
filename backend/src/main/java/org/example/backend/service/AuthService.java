@@ -69,6 +69,7 @@ public class AuthService implements OAuth2UserService<OAuth2UserRequest, OAuth2U
         if(userOptional.isEmpty()) {
             WichtelUser user = WichtelUser.builder()
                     .email(email)
+                    .oauthName(name)
                     .name(name)
                     .oauthProvider(provider)
                     .oauthId(providerId)
