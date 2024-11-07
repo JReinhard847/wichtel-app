@@ -9,6 +9,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UpdateUtil {
+
+    private UpdateUtil(){}
+
+
     public static void updateIgnoringNulls(Object update,Object original){
         final BeanWrapper src = new BeanWrapperImpl(update);
         PropertyDescriptor[] pds = src.getPropertyDescriptors();

@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.context.annotation.Bean;
 
 import java.beans.PropertyDescriptor;
 import java.time.LocalDateTime;
@@ -71,7 +70,7 @@ class DTOConverterTest {
 
         updateIgnoringNulls(updatedUser,originalUser);
 
-        assertEquals(originalUser.getName(),"new name");
-        assertEquals(originalUser.getEmail(),"old email");
+        assertEquals("new name",originalUser.getName());
+        assertEquals("old email",originalUser.getEmail());
     }
 }
