@@ -50,14 +50,16 @@ class WichtelEventServiceTest {
     void update() {
         WichtelEvent previous = new WichtelEvent("id", WichtelUser.builder().id("1").name("name").email("email").build(), "", "", "", "", null, null, Collections.emptyList(), new HashMap<>());
         WichtelUser organizer = WichtelUser.builder().id("1").name("name").email("email").build();
-        WichtelEventDTO updated = new WichtelEventDTO(toDTO(organizer),
+        WichtelEventDTO updated = new WichtelEventDTO("id",
+                toDTO(organizer),
                 "title",
                 "description",
                 "budged",
                 "image",
                 LocalDateTime.now(),
                 LocalDateTime.now(),
-                Collections.emptyList());
+                Collections.emptyList(),
+                false);
         when(repo.findById("id")).thenReturn(Optional.of(previous));
         when(repo.save(any(WichtelEvent.class))).thenAnswer(input -> input.getArgument(0));
         WichtelEventDTO actual = service.update(updated, "id");

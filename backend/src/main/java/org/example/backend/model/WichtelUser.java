@@ -14,6 +14,7 @@ public class WichtelUser {
     String id;
     String name;
     String email;
+    String oauthName;
     String oauthProvider;
     String oauthId;
 }
