@@ -154,6 +154,38 @@ export default function SingleEventPage() {
         setAddWishListOpen(true)
     }
 
+    let userButtons;
+
+    if (isParticipatingIn(user, event)) {
+        if (event.hasPairing) {
+            userButtons = (
+                <Button variant="contained" color="primary" onClick={handleShowPairing}>
+                    Show My Pairing
+                </Button>
+            );
+        } else {
+            userButtons = (
+                <Button variant="contained" color="primary" onClick={handleLeave}>
+                    Leave
+                </Button>
+            );
+        }
+    } else {
+        if (event.hasPairing) {
+            userButtons = (
+                <Button variant="contained" color="secondary" disabled={true}>
+                    Closed
+                </Button>
+            );
+        } else {
+            userButtons = (
+                <Button variant="contained" color="primary" onClick={handleJoin}>
+                    Join
+                </Button>
+            );
+        }
+    }
+
     return (
         <>
             <Card>
@@ -176,28 +208,9 @@ export default function SingleEventPage() {
                     </Typography>
                     <Box display="flex" flexDirection="column" gap={2}>
                         <Box display="flex" gap={1} mt={2}>
-                            {event.hasPairing ? (
-                                isParticipatingIn(user, event) ? (
-                                    <Button variant="contained" color="primary" onClick={handleShowPairing}>
-                                        Show My Pairing
-                                    </Button>
-                                ) : (
-                                    <Button variant="contained" color="secondary" disabled={true}>
-                                        Closed
-                                    </Button>
-                                )
-                            ) : (isParticipatingIn(user, event) ? (
-                                        <Button variant="contained" color="primary" onClick={handleLeave}>
-                                            Leave
-                                        </Button>
-                                    ) :
-                                    (
-                                        <Button variant="contained" color="primary" onClick={handleJoin}>
-                                            Join
-                                        </Button>
-                                    )
-
-                            )}
+                            <div>
+                                {userButtons}
+                            </div>
                             {isParticipatingIn(user, event) && !event.hasPairing && (
                                 <Button
                                     variant="contained"
