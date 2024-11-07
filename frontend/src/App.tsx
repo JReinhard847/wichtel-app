@@ -116,7 +116,7 @@ function App() {
     return (
         <AppProvider
             theme={customTheme}
-            branding={{title: "Wichtel App", logo: <img src="/src/assets/christmas-hat.png"/>}}
+            branding={{title: "Wichtel App", logo: <img src="/src/assets/christmas-hat.png" alt=""/>}}
             navigation={NAVIGATION}
         >
             <Outlet/>
