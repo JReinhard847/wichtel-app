@@ -27,7 +27,7 @@ export default function ParticipantListItem(props: ParticipantListItemProps) {
                         secondary={
                             props.participant.oauthName
                                 ? `aka ${props.participant.oauthName} on ${props.participant.oauthProvider}`
-                                : props.participant.oauthProvider || ""
+                                : props.participant.oauthProvider ?? ""
                         }
                     />
                 </Box>
