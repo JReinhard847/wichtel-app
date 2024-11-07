@@ -9,10 +9,8 @@ type EventGalleryProps = {
 
 export default function EventGallery(props: EventGalleryProps) {
     return (
-        <>
-            <Grid2 container>
-                {props.eventList.map(event => <EventCard key={event.id} event={event}/>)}
-            </Grid2>
-        </>
+        <Grid2 container>
+            {props.eventList.map(event => <EventCard key={event.id} event={event}/>)}
+        </Grid2>
     )
 }
