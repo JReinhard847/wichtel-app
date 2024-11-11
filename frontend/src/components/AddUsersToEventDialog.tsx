@@ -64,6 +64,7 @@ export default function AddUsersToEventDialog(props: AddUsersToEventDialogProps)
                     width: 400
                 }
             }}
+            onClose={handleClose}
             open={props.open}>
             <DialogTitle>Add users to this event</DialogTitle>
             <Autocomplete
