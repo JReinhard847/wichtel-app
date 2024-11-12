@@ -78,7 +78,7 @@ export default function SingleEventPage() {
 
     function handleJoin() {
         axios.post("/api/event/" + event.id + "/" + user.id)
-            .then(() => notifications.show("Joined event",
+            .then(() => notifications.show("Joined event, remember to write something in your wishlist",
                 {
                     autoHideDuration: 3000,
                     severity: "success"
